@@ -79,8 +79,8 @@ async def generate_video_prompt(image_url: str) -> str:
 
 
 # Switch between configs by uncommenting one line:
-VIDEO_SKILL, VIDEO_DURATION = "kling-video-generator", "5"         # Kling: "5" or "10"
-# VIDEO_SKILL, VIDEO_DURATION = "seedance-video-generator", "auto"  # Seedance: "auto" or 4-15
+VIDEO_SKILL, VIDEO_DURATION, VIDEO_RESOLUTION = "kling-video-generator", "5", None        # Kling: "5" or "10"
+# VIDEO_SKILL, VIDEO_DURATION, VIDEO_RESOLUTION = "seedance-video-generator", "5", "480p"     # Seedance: "auto" or 4-15; resolution: 480p/720p/1080p
 
 
 async def generate_video_with_skill(video_prompt: str, image_url: str) -> str:
@@ -88,12 +88,15 @@ async def generate_video_with_skill(video_prompt: str, image_url: str) -> str:
     result_file = PROJECT_ROOT / "video_result.json"
     result_file.unlink(missing_ok=True)
 
+    image_param = "start_image_url" if VIDEO_SKILL == "kling-video-generator" else "image_url"
     agent_prompt = (
         f"Use the {VIDEO_SKILL} skill to generate a fashion video.\n\n"
         f"Parameters:\n"
-        f"- start_image_url: {image_url}\n"
+        f"- {image_param}: {image_url}\n"
         f"- prompt: {video_prompt}\n"
-        f"- duration: {VIDEO_DURATION}\n\n"
+        f"- duration: {VIDEO_DURATION}\n"
+        + (f"- resolution: {VIDEO_RESOLUTION}\n" if VIDEO_RESOLUTION else "")
+        + "\n"
         "Run the fal.ai API call using Python and fal_client. "
         f"After the video is generated, write the result to '{result_file}' as JSON with this structure:\n"
         '{"video_url": "<url>", "file_size": <bytes>}\n'
@@ -140,7 +143,7 @@ async def create_fashion_video(image_url: str) -> dict:
         raise RuntimeError("Generated video prompt is empty.")
     print(f"Generated prompt:\n{video_prompt}\n")
 
-    print("[Step 3] Generating video via kling-video-generator skill...")
+    print(f"[Step 3] Generating video via {VIDEO_SKILL} skill...")
     video_url = await generate_video_with_skill(video_prompt, image_url)
     if not video_url:
         raise RuntimeError("No video URL returned from agent.")
@@ -160,6 +163,6 @@ async def create_fashion_video(image_url: str) -> dict:
 
 
 if __name__ == "__main__":
-    image_url = "https://example.com/your-fashion-product-image.jpg"  # replace with your image URL
+    image_url = "https://pic.hse24-dach.net/media/de/products/483851002/0_182e12ae-7a7b-5888-9bde-377abf750000_pics2080.jpg"  # replace with your image URL
     result = asyncio.run(create_fashion_video(image_url))
     print(f"\nResult: {result}")
