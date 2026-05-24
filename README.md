@@ -2,6 +2,22 @@
 
 A prompt-chaining AI pipeline that turns a static fashion product image into a short video using Claude Vision and fal.ai.
 
+## Example
+
+**Input image**
+
+![Input](examples/input.jpg)
+
+**Kling v2.6 Pro output**
+
+<video src="examples/kling.mp4" controls width="480"></video>
+
+**Seedance 2.0 output**
+
+<video src="examples/seedance.mp4" controls width="480"></video>
+
+---
+
 ## How it works
 
 ```
