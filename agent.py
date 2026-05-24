@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import subprocess
+from datetime import datetime
 from pathlib import Path
 
 import httpx
@@ -77,8 +78,9 @@ async def generate_video_prompt(image_url: str) -> str:
     return await asyncio.to_thread(_call)
 
 
-VIDEO_SKILL = "kling-video-generator"  # or "seedance-video-generator"
-VIDEO_DURATION = "5"  # Kling: "5" or "10" | Seedance: "auto" or 4-15
+# Switch between configs by uncommenting one line:
+VIDEO_SKILL, VIDEO_DURATION = "kling-video-generator", "5"         # Kling: "5" or "10"
+# VIDEO_SKILL, VIDEO_DURATION = "seedance-video-generator", "auto"  # Seedance: "auto" or 4-15
 
 
 async def generate_video_with_skill(video_prompt: str, image_url: str) -> str:
@@ -144,7 +146,10 @@ async def create_fashion_video(image_url: str) -> dict:
         raise RuntimeError("No video URL returned from agent.")
 
     print("\n[Step 4] Downloading video...")
-    output_path = PROJECT_ROOT / "output_video.mp4"
+    output_dir = PROJECT_ROOT / "output"
+    output_dir.mkdir(exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_path = output_dir / f"output_video_{VIDEO_SKILL}_{timestamp}.mp4"
     await asyncio.to_thread(download_video, video_url, output_path)
     print(f"Saved to: {output_path}")
 
@@ -155,6 +160,6 @@ async def create_fashion_video(image_url: str) -> dict:
 
 
 if __name__ == "__main__":
-    image_url = "https://pic.hse24-dach.net/media/de/products/483851002/0_182e12ae-7a7b-5888-9bde-377abf750000_pics2080.jpg"
+    image_url = input("Enter your reference fashion product image URL: ").strip()
     result = asyncio.run(create_fashion_video(image_url))
     print(f"\nResult: {result}")
