@@ -6,15 +6,11 @@ A prompt-chaining AI pipeline that turns a static fashion product image into a s
 
 **Input image**
 
-![Input](examples/input.jpg)
+<img src="examples/input.jpg" width="300" alt="Input fashion product">
 
-**Kling v2.6 Pro output**
+**Kling v2.6 Pro output** — [▶ Watch](examples/kling.mp4)
 
-<video src="examples/kling.mp4" controls width="480"></video>
-
-**Seedance 2.0 output**
-
-<video src="examples/seedance.mp4" controls width="480"></video>
+**Seedance 2.0 output** — [▶ Watch](examples/seedance.mp4)
 
 ---
 
