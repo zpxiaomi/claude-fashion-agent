@@ -160,6 +160,6 @@ async def create_fashion_video(image_url: str) -> dict:
 
 
 if __name__ == "__main__":
-    image_url = input("Enter your reference fashion product image URL: ").strip()
+    image_url = "https://example.com/your-fashion-product-image.jpg"  # replace with your image URL
     result = asyncio.run(create_fashion_video(image_url))
     print(f"\nResult: {result}")
