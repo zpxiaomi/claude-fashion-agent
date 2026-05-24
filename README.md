@@ -10,15 +10,11 @@ A prompt-chaining AI pipeline that turns a static fashion product image into a s
 
 **Kling v2.6 Pro output**
 
+<video src="https://github.com/user-attachments/assets/5d26a342-ab26-4dbd-bc10-7f6ad52cfb05" width="300" controls></video>
 
-https://github.com/user-attachments/assets/5d26a342-ab26-4dbd-bc10-7f6ad52cfb05
+**Seedance 2.0 output**
 
-
-
-**Seedance 2.0 output** 
-
-
-https://github.com/user-attachments/assets/413574fb-7994-49ba-b81c-721bf14e56e1
+<video src="https://github.com/user-attachments/assets/413574fb-7994-49ba-b81c-721bf14e56e1" width="300" controls></video>
 
 
 ---
