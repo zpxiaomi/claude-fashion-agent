@@ -1,7 +1,7 @@
 [project]
-name = "claude-agent"
+name = "claude-fashion-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "Fashion video generation agent using Claude Vision and fal.ai"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
