@@ -1,6 +1,7 @@
 import asyncio
+import json
 import os
-import re
+import subprocess
 from pathlib import Path
 
 import httpx
@@ -76,38 +77,55 @@ async def generate_video_prompt(image_url: str) -> str:
     return await asyncio.to_thread(_call)
 
 
+VIDEO_SKILL = "kling-video-generator"  # or "seedance-video-generator"
+VIDEO_DURATION = "5"  # Kling: "5" or "10" | Seedance: "auto" or 4-15
+
+
 async def generate_video_with_skill(video_prompt: str, image_url: str) -> str:
-    """Step 3: Use kling-video-generator skill via Claude Agent SDK to create the video."""
+    """Step 3: Use the configured video skill via Claude Agent SDK to create the video."""
+    result_file = PROJECT_ROOT / "video_result.json"
+    result_file.unlink(missing_ok=True)
+
     agent_prompt = (
-        "Use the kling-video-generator skill to generate a fashion video.\n\n"
+        f"Use the {VIDEO_SKILL} skill to generate a fashion video.\n\n"
         f"Parameters:\n"
         f"- start_image_url: {image_url}\n"
-        f"- prompt: {video_prompt}\n\n"
+        f"- prompt: {video_prompt}\n"
+        f"- duration: {VIDEO_DURATION}\n\n"
         "Run the fal.ai API call using Python and fal_client. "
-        "After the video is generated, print the video URL on the last line "
-        "prefixed exactly with 'VIDEO_URL: '."
+        f"After the video is generated, write the result to '{result_file}' as JSON with this structure:\n"
+        '{"video_url": "<url>", "file_size": <bytes>}\n'
+        "Use the video URL from result['video']['url']."
     )
 
     options = ClaudeAgentOptions(
         cwd=str(PROJECT_ROOT),
         setting_sources=["project"],
-        skills=["kling-video-generator"],
         allowed_tools=["Bash"],
     )
 
-    full_response = ""
     async for message in query(prompt=agent_prompt, options=options):
         if isinstance(message, AssistantMessage):
             for block in message.content:
                 if isinstance(block, TextBlock):
                     print(f"  [agent] {block.text}")
-                    full_response += block.text
 
-    match = re.search(r"VIDEO_URL:\s*(https?://\S+)", full_response)
-    if not match:
-        match = re.search(r"https?://\S+(?:\.mp4|fal\.media)\S*", full_response)
+    if not result_file.exists():
+        raise RuntimeError("Agent did not write video_result.json — video generation may have failed.")
 
-    return match.group(1) if match else ""
+    data = json.loads(result_file.read_text())
+    result_file.unlink(missing_ok=True)
+    return data.get("video_url", "")
+
+
+def download_video(video_url: str, output_path: Path) -> None:
+    """Download the video from the given URL to a local file."""
+    with httpx.Client(timeout=120) as client:
+        with client.stream("GET", video_url) as resp:
+            resp.raise_for_status()
+            with output_path.open("wb") as f:
+                for chunk in resp.iter_bytes(chunk_size=8192):
+                    f.write(chunk)
 
 
 async def create_fashion_video(image_url: str) -> dict:
@@ -122,9 +140,18 @@ async def create_fashion_video(image_url: str) -> dict:
 
     print("[Step 3] Generating video via kling-video-generator skill...")
     video_url = await generate_video_with_skill(video_prompt, image_url)
-    print(f"\nVideo URL: {video_url}")
+    if not video_url:
+        raise RuntimeError("No video URL returned from agent.")
 
-    return {"video_prompt": video_prompt, "video_url": video_url}
+    print("\n[Step 4] Downloading video...")
+    output_path = PROJECT_ROOT / "output_video.mp4"
+    await asyncio.to_thread(download_video, video_url, output_path)
+    print(f"Saved to: {output_path}")
+
+    print("Opening video...")
+    subprocess.Popen(["xdg-open", str(output_path)])
+
+    return {"video_prompt": video_prompt, "video_url": video_url, "local_file": str(output_path)}
 
 
 if __name__ == "__main__":

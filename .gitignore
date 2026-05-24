@@ -1,3 +1,7 @@
+# Agent output
+video_result.json
+output_video.mp4
+
 # Environment / secrets
 .env
 .env.*
